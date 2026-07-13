@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The Guessing Game — Describing Orgasm</title>
+  <link rel="icon" type="image/png" href="img/favicon.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a class="brand" href="index.html"><img class="brand-logo" src="img/emblem.png" alt="">Describing Orgasm</a>
+      <a class="link" href="index.html">The Study</a>
+      <a class="link" href="submit.html">Submit</a>
+      <a class="link active" href="play.html">Play</a>
+      <a class="link" href="results.html">Results</a>
+    </div>
+  </nav>
+
+  <main class="wrap">
+    <img class="banner" src="img/play-header.png" alt="">
+    <h1>Whose body wrote this?</h1>
+    <p class="lede">
+      You'll read 5 orgasm descriptions written by fellow students. For each
+      description, guess the sex of the person who wrote it.
+    </p>
+
+    <!-- States -->
+    <div id="loading"><div class="spinner"></div><p style="text-align:center">Drawing descriptions…</p></div>
+
+    <div id="notConfigured" class="notice err hidden">
+      This site isn't connected to its backend yet. Add your Apps Script Web App URL
+      to <code>config.js</code> (see the README) and reload.
+    </div>
+
+    <div id="loadError" class="notice err hidden"></div>
+
+    <div id="empty" class="card hidden" style="text-align:center">
+      <h2 style="margin-top:.2em">No descriptions yet</h2>
+      <p>There aren't any penis- or vulva-authored descriptions in the pool yet — be the first to add one.</p>
+      <a class="btn pop" href="submit.html">Write a description →</a>
+    </div>
+
+    <!-- Round -->
+    <section id="round" class="hidden">
+      <div class="progress" id="progress"></div>
+      <div class="card">
+        <p class="desc-quote" id="descText"></p>
+      </div>
+      <p style="font-weight:600">Which genitals does the writer have?</p>
+      <div class="guess-grid" id="guesses"></div>
+      <div id="verdict" class="verdict hidden"></div>
+      <div class="btn-row" id="nextRow" style="margin-top:20px"></div>
+    </section>
+
+    <!-- Scorecard -->
+    <section id="scorecard" class="hidden">
+      <div class="card" style="text-align:center">
+        <p class="progress">Your scorecard</p>
+        <div class="score-big"><span id="scoreNum">0</span><span style="font-size:.4em;color:var(--ink-soft)">/<span id="scoreOf">5</span></span></div>
+        <div class="bar"><span id="scoreBar" style="width:0%"></span></div>
+        <p id="scorePct" style="font-weight:600;margin:0"></p>
+        <p id="scoreMsg" style="color:var(--ink-soft)"></p>
+      </div>
+      <div id="review"></div>
+      <div class="btn-row" style="justify-content:center">
+        <button class="btn pop" id="playAgain">Play again</button>
+        <a class="btn primary" href="results.html">See class results →</a>
+        <a class="btn" href="submit.html">Add your own description</a>
+      </div>
+      <div class="callout" style="margin-top:24px">
+        In the 1976 study, expert judges did barely better than a coin toss. If your
+        score sits near the <span id="chanceLine"></span> you'd expect from guessing,
+        you've reproduced the original finding: with the anatomy left unnamed, these
+        descriptions are remarkably hard to tell apart. See how the
+        <a href="results.html">whole class</a> is doing.
+      </div>
+    </section>
+  </main>
+
+  <script src="config.js"></script>
+  <script>
+    (function () {
+      var el = function (id) { return document.getElementById(id); };
+      var deck = [];        // this game's descriptions (eligible only)
+      var idx = 0;          // current round index
+      var score = 0;
+      var answers = [];     // {item, guess, correct}
+      var gameId = null;
+      var options = CONFIG.GUESS_OPTIONS;         // penis / vulva
+      var chancePct = Math.round(100 / options.length);
+
+      el('chanceLine').textContent = '~' + chancePct + '%';
+
+      if (!isConfigured()) {
+        el('loading').classList.add('hidden');
+        el('notConfigured').classList.remove('hidden');
+        return;
+      }
+
+      function start() {
+        deck = []; idx = 0; score = 0; answers = []; gameId = makeId();
+        el('scorecard').classList.add('hidden');
+        el('empty').classList.add('hidden');
+        el('loadError').classList.add('hidden');
+        el('round').classList.add('hidden');
+        el('loading').classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        apiGetRandom(CONFIG.ROUNDS)
+          .then(function (res) {
+            el('loading').classList.add('hidden');
+            if (!res || !res.ok) {
+              return showLoadError((res && res.error) || 'Could not load descriptions.');
+            }
+            // Safety net: the backend already filters, but guard again here.
+            deck = (res.items || []).filter(function (it) {
+              return ELIGIBLE_GENITALS.indexOf(it.genitals) !== -1;
+            });
+            if (deck.length === 0) return el('empty').classList.remove('hidden');
+            renderRound();
+          })
+          .catch(function () {
+            el('loading').classList.add('hidden');
+            showLoadError('Could not reach the server. Check your connection and reload.');
+          });
+      }
+
+      function showLoadError(msg) {
+        el('loadError').textContent = msg;
+        el('loadError').classList.remove('hidden');
+      }
+
+      function renderRound() {
+        var item = deck[idx];
+        el('round').classList.remove('hidden');
+        el('progress').textContent = 'Description ' + (idx + 1) + ' of ' + deck.length;
+
+        // Safe: user text goes in via textContent, never innerHTML.
+        el('descText').textContent = item.description;
+
+        el('verdict').classList.add('hidden');
+        el('verdict').className = 'verdict hidden';
+        el('nextRow').innerHTML = '';
+
+        var grid = el('guesses');
+        grid.innerHTML = '';
+        options.forEach(function (g) {
+          var btn = document.createElement('button');
+          btn.className = 'btn guess-btn';
+          btn.textContent = g.label;
+          btn.addEventListener('click', function () { onGuess(g.value, btn); });
+          grid.appendChild(btn);
+        });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      function onGuess(guessValue, clickedBtn) {
+        var item = deck[idx];
+        var correct = guessValue === item.genitals;
+        if (correct) score++;
+        answers.push({ item: item, guess: guessValue, correct: correct });
+
+        var buttons = el('guesses').querySelectorAll('.guess-btn');
+        buttons.forEach(function (b, i) {
+          b.disabled = true;
+          var val = options[i].value;
+          if (val === item.genitals) b.classList.add(correct ? 'correct' : 'reveal');
+          if (b === clickedBtn && !correct) b.classList.add('wrong');
+        });
+
+        var verdict = el('verdict');
+        verdict.classList.remove('hidden');
+        if (correct) {
+          verdict.className = 'verdict good';
+          verdict.textContent = '✓ Correct — the writer has: ' + genitalLabel(item.genitals) + '.';
+        } else {
+          verdict.className = 'verdict bad';
+          verdict.textContent = '✗ Not quite — the writer has: ' + genitalLabel(item.genitals) + '.';
+        }
+
+        var next = document.createElement('button');
+        next.className = 'btn pop';
+        var last = idx === deck.length - 1;
+        next.textContent = last ? 'See my scorecard →' : 'Next description →';
+        next.addEventListener('click', function () {
+          if (last) { showScorecard(); }
+          else { idx++; renderRound(); }
+        });
+        el('nextRow').appendChild(next);
+      }
+
+      function showScorecard() {
+        el('round').classList.add('hidden');
+        el('scorecard').classList.remove('hidden');
+
+        var total = deck.length;
+        var pct = Math.round((score / total) * 100);
+        el('scoreNum').textContent = score;
+        el('scoreOf').textContent = total;
+        el('scorePct').textContent = 'You guessed ' + pct + '% right.';
+        el('scoreBar').style.width = pct + '%';
+
+        var msg;
+        if (pct <= chancePct + 10) {
+          msg = "That's right around chance — exactly what Vance & Wagner found.";
+        } else if (pct >= 80) {
+          msg = "Better than the study's judges managed — though with so few guesses, luck plays a big part.";
+        } else {
+          msg = "A bit above chance, but nowhere near a sure thing.";
+        }
+        el('scoreMsg').textContent = msg;
+
+        // Record this game for the class dashboard (fire and forget).
+        var guesses = answers.map(function (a) {
+          return { actual: a.item.genitals, guess: a.guess, correct: a.correct };
+        });
+        try { apiRecordGame(gameId, guesses); } catch (e) { /* non-blocking */ }
+
+        // Per-description review (safe text rendering).
+        var review = el('review');
+        review.innerHTML = '';
+        answers.forEach(function (a, i) {
+          var card = document.createElement('div');
+          card.className = 'card muted';
+
+          var head = document.createElement('div');
+          head.className = 'progress';
+          head.textContent = (a.correct ? '✓ ' : '✗ ') + 'Description ' + (i + 1);
+          head.style.color = a.correct ? 'var(--good)' : 'var(--bad)';
+
+          var quote = document.createElement('p');
+          quote.style.margin = '8px 0';
+          quote.textContent = '“' + a.item.description + '”';
+
+          var line = document.createElement('p');
+          line.style.margin = '0';
+          line.style.fontSize = '.9rem';
+          line.style.color = 'var(--ink-soft)';
+          line.textContent = 'You guessed ' + genitalLabel(a.guess)
+            + ' · Actual: ' + genitalLabel(a.item.genitals);
+
+          card.appendChild(head);
+          card.appendChild(quote);
+          card.appendChild(line);
+          review.appendChild(card);
+        });
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      el('playAgain').addEventListener('click', start);
+      start();
+    })();
+  </script>
+</body>
+</html>

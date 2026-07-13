@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Class Results — Describing Orgasm</title>
+  <link rel="icon" type="image/png" href="img/favicon.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a class="brand" href="index.html"><img class="brand-logo" src="img/emblem.png" alt="">Describing Orgasm</a>
+      <a class="link" href="index.html">The Study</a>
+      <a class="link" href="submit.html">Submit</a>
+      <a class="link" href="play.html">Play</a>
+      <a class="link active" href="results.html">Results</a>
+    </div>
+  </nav>
+
+  <main class="wrap">
+    <img class="banner" src="img/results-header.png" alt="">
+    <h1>Class results</h1>
+    <p class="lede">
+      The class's final tally is shown below. With only two options (penis and
+      vulva), pure guessing will be 50% correct.
+    </p>
+
+    <div id="loading"><div class="spinner"></div><p style="text-align:center">Tallying every guess…</p></div>
+
+    <div id="notConfigured" class="notice err hidden">
+      This site isn't connected to its backend yet. Add your Apps Script Web App URL
+      to <code>config.js</code> (see the README) and reload.
+    </div>
+
+    <div id="loadError" class="notice err hidden"></div>
+
+    <div id="empty" class="card hidden" style="text-align:center">
+      <h2 style="margin-top:.2em">No games played yet</h2>
+      <p>Once people start playing, the class's accuracy shows up here.</p>
+      <a class="btn pop" href="play.html">Play the guessing game →</a>
+    </div>
+
+    <div id="content" class="hidden"></div>
+
+    <div class="btn-row hidden" id="actions" style="justify-content:center;margin-top:26px">
+      <button class="btn primary" id="refresh">Refresh</button>
+      <a class="btn" href="play.html">Play a round</a>
+    </div>
+  </main>
+
+  <script src="config.js"></script>
+  <script>
+    (function () {
+      var el = function (id) { return document.getElementById(id); };
+      var pct = function (x) { return Math.round(x * 100); };
+
+      if (!isConfigured()) {
+        el('loading').classList.add('hidden');
+        el('notConfigured').classList.remove('hidden');
+        return;
+      }
+
+      // Build one labelled horizontal bar. `opts.pop` colours it orange.
+      function hbar(label, value, valuePct, opts) {
+        opts = opts || {};
+        var row = document.createElement('div');
+        row.className = 'hbar-row';
+
+        var head = document.createElement('div');
+        head.className = 'hbar-head';
+        var l = document.createElement('span'); l.textContent = label;
+        var v = document.createElement('b'); v.textContent = value;
+        head.appendChild(l); head.appendChild(v);
+
+        var bar = document.createElement('div');
+        bar.className = 'hbar' + (opts.pop ? ' pop' : '');
+        var fill = document.createElement('span');
+        fill.style.width = Math.max(0, Math.min(100, valuePct)) + '%';
+        bar.appendChild(fill);
+
+        // optional dashed marker (e.g. the 50% chance line)
+        if (typeof opts.marker === 'number') {
+          var m = document.createElement('span');
+          m.style.cssText = 'position:absolute;top:-3px;bottom:-3px;left:' + opts.marker
+            + '%;border-left:2px dashed var(--ink-soft);opacity:.7';
+          bar.appendChild(m);
+        }
+        row.appendChild(head); row.appendChild(bar);
+        return row;
+      }
+
+      function statBox(num, label) {
+        var s = document.createElement('div');
+        s.className = 'stat';
+        var n = document.createElement('div'); n.className = 'num'; n.textContent = num;
+        var l = document.createElement('div'); l.className = 'lbl'; l.textContent = label;
+        s.appendChild(n); s.appendChild(l);
+        return s;
+      }
+
+      function render(stats) {
+        var content = el('content');
+        content.innerHTML = '';
+        var chancePctVal = pct(stats.chance);          // 50
+        var acc = stats.accuracy;                        // 0..1
+        var accPct = pct(acc);
+        var n = stats.totalGuesses;
+
+        // --- headline stats ---
+        var grid = document.createElement('div');
+        grid.className = 'stat-grid';
+        grid.appendChild(statBox(stats.gamesPlayed, 'Games played'));
+        grid.appendChild(statBox(n, 'Guesses made'));
+        grid.appendChild(statBox(accPct + '%', 'Class accuracy'));
+        grid.appendChild(statBox(chancePctVal + '%', 'Pure chance'));
+        content.appendChild(grid);
+
+        // --- players vs chance ---
+        var card1 = document.createElement('div');
+        card1.className = 'card';
+        var h1 = document.createElement('h3'); h1.textContent = 'The class vs. chance';
+        h1.style.marginTop = '0';
+        card1.appendChild(h1);
+        card1.appendChild(hbar('Class accuracy', accPct + '%', accPct, { pop: true, marker: chancePctVal }));
+
+        // 95% confidence interval — is 50% inside it?
+        var se = n > 0 ? Math.sqrt(acc * (1 - acc) / n) : 0;
+        var lo = Math.max(0, acc - 1.96 * se), hi = Math.min(1, acc + 1.96 * se);
+        var chanceInside = (stats.chance >= lo && stats.chance <= hi);
+
+        var verdict = document.createElement('p');
+        verdict.style.margin = '14px 0 0';
+        if (n < 10) {
+          verdict.textContent = 'Only ' + n + ' guess' + (n === 1 ? '' : 'es')
+            + ' so far — play a few more rounds to get a stable picture.';
+        } else if (chanceInside) {
+          verdict.innerHTML = '<strong>Not distinguishable from a coin flip.</strong> '
+            + 'Across ' + n + ' guesses, class accuracy (' + accPct + '%) is within the '
+            + 'margin of error of the ' + chancePctVal + '% you’d get by guessing — '
+            + 'the classic Vance &amp; Wagner result.';
+        } else if (acc > stats.chance) {
+          verdict.innerHTML = '<strong>Slightly better than chance.</strong> Across ' + n
+            + ' guesses, the class is right ' + accPct + '% of the time — above ' + chancePctVal
+            + '%, though still far from a sure thing.';
+        } else {
+          verdict.innerHTML = '<strong>Worse than chance.</strong> Across ' + n
+            + ' guesses, the class is right just ' + accPct + '% of the time.';
+        }
+        card1.appendChild(verdict);
+
+        var ci = document.createElement('p');
+        ci.className = 'hint';
+        ci.style.margin = '8px 0 0';
+        if (n >= 10) ci.textContent = '95% confidence interval: ' + pct(lo) + '%–' + pct(hi) + '%.';
+        card1.appendChild(ci);
+        content.appendChild(card1);
+
+        // --- accuracy by the writer's actual anatomy ---
+        var card2 = document.createElement('div');
+        card2.className = 'card';
+        var h2 = document.createElement('h3'); h2.textContent = "By the writer's anatomy";
+        h2.style.marginTop = '0';
+        card2.appendChild(h2);
+        var sub = document.createElement('p'); sub.className = 'hint'; sub.style.marginTop = '0';
+        sub.textContent = 'How often players correctly identified each group.';
+        card2.appendChild(sub);
+        CONFIG.GUESS_OPTIONS.forEach(function (opt) {
+          var d = stats.byActual[opt.value] || { n: 0, correct: 0 };
+          var a = d.n ? d.correct / d.n : 0;
+          card2.appendChild(hbar(genitalLabel(opt.value) + ' (' + d.n + ')',
+            (d.n ? pct(a) + '%' : '—'), d.n ? pct(a) : 0, { marker: chancePctVal }));
+        });
+        content.appendChild(card2);
+
+        content.classList.remove('hidden');
+        el('actions').classList.remove('hidden');
+      }
+
+      function load() {
+        el('loading').classList.remove('hidden');
+        el('loadError').classList.add('hidden');
+        el('empty').classList.add('hidden');
+        el('content').classList.add('hidden');
+        apiGetStats()
+          .then(function (stats) {
+            el('loading').classList.add('hidden');
+            if (!stats || !stats.ok) {
+              el('loadError').textContent = (stats && stats.error) || 'Could not load results.';
+              el('loadError').classList.remove('hidden');
+              return;
+            }
+            if (!stats.totalGuesses) {
+              el('empty').classList.remove('hidden');
+              el('actions').classList.remove('hidden');
+              return;
+            }
+            render(stats);
+          })
+          .catch(function () {
+            el('loading').classList.add('hidden');
+            el('loadError').textContent = 'Could not reach the server. Check your connection and reload.';
+            el('loadError').classList.remove('hidden');
+          });
+      }
+
+      el('refresh').addEventListener('click', load);
+      load();
+    })();
+  </script>
+</body>
+</html>

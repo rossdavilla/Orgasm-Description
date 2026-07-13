@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Submit a Description — Describing Orgasm</title>
+  <link rel="icon" type="image/png" href="img/favicon.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a class="brand" href="index.html"><img class="brand-logo" src="img/emblem.png" alt="">Describing Orgasm</a>
+      <a class="link" href="index.html">The Study</a>
+      <a class="link active" href="submit.html">Submit</a>
+      <a class="link" href="play.html">Play</a>
+      <a class="link" href="results.html">Results</a>
+    </div>
+  </nav>
+
+  <main class="wrap">
+    <img class="banner" src="img/submit-header.png" alt="">
+    <h1>Describe an orgasm</h1>
+    <p class="lede">
+      In your own words, describe what an orgasm feels like. Do NOT mention your
+      genitals or gender as part of your description.
+    </p>
+
+    <div id="notConfigured" class="notice err hidden">
+      This site isn't connected to its backend yet. Add your Apps Script Web App URL
+      to <code>config.js</code> (see the README) and reload.
+    </div>
+
+    <form id="form" novalidate>
+      <label class="field" for="description">Your description</label>
+      <textarea id="description" maxlength="2000"></textarea>
+      <div class="counter"><span id="count">0</span> / 2000</div>
+
+      <div id="hintWarn" class="notice warn hidden"></div>
+
+      <label class="field">Which genitals do you have?</label>
+      <div class="opt-grid" id="genitals"><!-- option buttons injected from config.js --></div>
+
+      <div id="formError" class="notice err hidden"></div>
+
+      <div class="btn-row" style="justify-content:center">
+        <button type="submit" class="btn pop" id="submitBtn">Submit</button>
+      </div>
+    </form>
+
+    <div id="done" class="card hidden" style="text-align:center">
+      <img class="done-emblem" src="img/circle-motif.png" alt="">
+      <h2 style="margin-top:.2em">Thank you — it's in.</h2>
+      <p>Your description has been added anonymously to the pool.</p>
+      <div class="btn-row" style="justify-content:center">
+        <a class="btn primary" href="play.html">Play the guessing game →</a>
+        <button class="btn" id="again">Submit another</button>
+      </div>
+    </div>
+  </main>
+
+  <script src="config.js"></script>
+  <script>
+    (function () {
+      var form = document.getElementById('form');
+      var descEl = document.getElementById('description');
+      var countEl = document.getElementById('count');
+      var genitalsEl = document.getElementById('genitals');
+      var hintWarn = document.getElementById('hintWarn');
+      var formError = document.getElementById('formError');
+      var submitBtn = document.getElementById('submitBtn');
+      var done = document.getElementById('done');
+      var selectedGenitals = '';
+
+      // Build the anatomy option buttons (Penis / Vulva / Intersex / other).
+      CONFIG.GENITALS.forEach(function (g) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn opt-btn';
+        btn.textContent = g.label;
+        btn.addEventListener('click', function () {
+          selectedGenitals = g.value;
+          genitalsEl.querySelectorAll('.opt-btn').forEach(function (b) { b.classList.remove('selected'); });
+          btn.classList.add('selected');
+        });
+        genitalsEl.appendChild(btn);
+      });
+
+      descEl.setAttribute('maxlength', String(CONFIG.MAX_DESCRIPTION_LENGTH));
+      document.querySelector('.counter').lastChild.textContent = ' / ' + CONFIG.MAX_DESCRIPTION_LENGTH;
+
+      if (!isConfigured()) {
+        document.getElementById('notConfigured').classList.remove('hidden');
+        submitBtn.disabled = true;
+      }
+
+      // Live character count.
+      descEl.addEventListener('input', function () {
+        countEl.textContent = descEl.value.length;
+        checkHints();
+      });
+
+      // Gentle warning if the text seems to name anatomy. Not a hard block.
+      function foundHintWords() {
+        var text = descEl.value.toLowerCase();
+        var hits = [];
+        GENITAL_HINT_WORDS.forEach(function (w) {
+          var re = new RegExp('\\b' + w.replace(/[-\/]/g, '[-\\/ ]?') + '\\b', 'i');
+          if (re.test(text) && hits.indexOf(w) === -1) hits.push(w);
+        });
+        return hits;
+      }
+      function checkHints() {
+        var hits = foundHintWords();
+        if (hits.length) {
+          hintWarn.textContent = 'Heads up — this looks like it may name anatomy (“'
+            + hits.slice(0, 3).join('”, “') + '”). Please describe the feeling without '
+            + 'naming body parts. You can edit it, or submit anyway.';
+          hintWarn.classList.remove('hidden');
+        } else {
+          hintWarn.classList.add('hidden');
+        }
+      }
+
+      function showError(msg) {
+        formError.textContent = msg;
+        formError.classList.remove('hidden');
+      }
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        formError.classList.add('hidden');
+
+        var description = descEl.value.trim();
+        if (description.length < CONFIG.MIN_DESCRIPTION_LENGTH) {
+          return showError('Please write a little more — at least '
+            + CONFIG.MIN_DESCRIPTION_LENGTH + ' characters.');
+        }
+        if (!selectedGenitals) return showError('Please choose which genitals you have.');
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Saving…';
+
+        apiSubmitResponse(description, selectedGenitals)
+          .then(function (res) {
+            if (res && res.ok) {
+              form.classList.add('hidden');
+              done.classList.remove('hidden');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+              showError((res && res.error) || 'Something went wrong. Please try again.');
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Submit';
+            }
+          })
+          .catch(function () {
+            showError('Could not reach the server. Check your connection and try again.');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Submit';
+          });
+      });
+
+      document.getElementById('again').addEventListener('click', function () {
+        descEl.value = '';
+        countEl.textContent = '0';
+        selectedGenitals = '';
+        genitalsEl.querySelectorAll('.opt-btn').forEach(function (b) { b.classList.remove('selected'); });
+        hintWarn.classList.add('hidden');
+        done.classList.add('hidden');
+        form.classList.remove('hidden');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    })();
+  </script>
+</body>
+</html>
