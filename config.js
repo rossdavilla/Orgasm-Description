@@ -85,13 +85,21 @@ function apiRecordGame(gameId, guesses) {
   return apiPost({ action: "recordGame", gameId: gameId, guesses: guesses });
 }
 
+/* A unique token to append to GET requests. Google Apps Script caches GET
+   responses per-URL, so without this every player is served the SAME cached
+   "random" set. A changing value makes each request a cache miss. */
+function cacheBuster() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2);
+}
+
 /* Fetch up to n random eligible responses for the guessing game. */
 function apiGetRandom(n) {
-  const url = CONFIG.WEB_APP_URL + "?action=random&n=" + encodeURIComponent(n);
-  return fetch(url).then((res) => res.json());
+  const url = CONFIG.WEB_APP_URL + "?action=random&n=" + encodeURIComponent(n) + "&cb=" + cacheBuster();
+  return fetch(url, { cache: "no-store" }).then((res) => res.json());
 }
 
 /* Fetch aggregate accuracy statistics for the dashboard. */
 function apiGetStats() {
-  return fetch(CONFIG.WEB_APP_URL + "?action=stats").then((res) => res.json());
+  const url = CONFIG.WEB_APP_URL + "?action=stats&cb=" + cacheBuster();
+  return fetch(url, { cache: "no-store" }).then((res) => res.json());
 }

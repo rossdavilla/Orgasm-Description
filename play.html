@@ -108,16 +108,25 @@
         el('loading').classList.remove('hidden');
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
-        apiGetRandom(CONFIG.ROUNDS)
+        // Pull a large pool (the backend caps at 25) and shuffle it in the
+        // browser, so every player and every game gets a fresh, independent
+        // draw — even if the response is cached or the pool is small.
+        apiGetRandom(25)
           .then(function (res) {
             el('loading').classList.add('hidden');
             if (!res || !res.ok) {
               return showLoadError((res && res.error) || 'Could not load descriptions.');
             }
             // Safety net: the backend already filters, but guard again here.
-            deck = (res.items || []).filter(function (it) {
+            var pool = (res.items || []).filter(function (it) {
               return ELIGIBLE_GENITALS.indexOf(it.genitals) !== -1;
             });
+            // Fisher–Yates shuffle in the browser, then take this game's rounds.
+            for (var i = pool.length - 1; i > 0; i--) {
+              var j = Math.floor(Math.random() * (i + 1));
+              var tmp = pool[i]; pool[i] = pool[j]; pool[j] = tmp;
+            }
+            deck = pool.slice(0, CONFIG.ROUNDS);
             if (deck.length === 0) return el('empty').classList.remove('hidden');
             renderRound();
           })
