@@ -347,96 +347,102 @@ textarea:focus, select:focus { outline: 2px solid var(--teal); outline-offset: 1
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ============================================================
-   EMBED MODE — fit the whole site inside a short frame, e.g.
-   Top Hat's 720×450 iframe. Everything here is scoped to a
-   short viewport, so the standalone site (rossdavilla.github.io)
-   is left completely untouched on normal-height screens.
-   This is layout only — it never touches config.js, the fetch
-   helpers, or any Google Sheet / Apps Script call.
+   EMBED MODE — fit the whole site inside a 720×450 frame, e.g.
+   Top Hat's iframe, regardless of the frame's actual size.
+
+   Triggered by the class `embed` on <html> (set by a tiny inline
+   script in each page's <head>) whenever the page is loaded inside
+   an iframe, visited with ?embed in the URL, or shown in a short
+   viewport. The standalone site at rossdavilla.github.io is a
+   top-level page, so it never gets the class and is left untouched.
+
+   Layout only — this never touches config.js, the fetch helpers,
+   or any Google Sheet / Apps Script call.
    ============================================================ */
-@media (max-height: 520px) {
-  html, body { height: 100%; }
-  body {
-    margin: 0;
-    font-size: 14px;
-    line-height: 1.45;
-    background-image: none;        /* flat background — no imagery in the frame */
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;              /* the frame itself never scrolls */
-  }
-
-  /* Compact, non-sticky nav (sticky wastes height in a short frame) */
-  .nav { position: static; flex: 0 0 auto; }
-  .nav-inner { padding: 6px 14px; gap: 2px 12px; }
-  .brand { font-size: .92rem; }
-  .brand-logo { width: 18px; height: 18px; }
-  .nav a.link { font-size: .8rem; padding: 2px 1px; }
-
-  /* The content area fills whatever height is left below the nav.
-     min-height:0 lets it shrink; overflow-y:auto is a safety valve so
-     an unusually long student description is never clipped. */
-  .wrap {
-    flex: 1 1 auto;
-    min-height: 0;
-    max-width: 720px;
-    padding: 9px 16px 8px;
-    overflow-y: auto;
-  }
-
-  /* Drop ALL imagery in the frame: banners, hero, success emblem, nav logo */
-  .hero-img, .banner, .done-emblem, .brand-logo, .cta-card img { display: none !important; }
-
-  /* Tighter type + spacing */
-  h1 { font-size: 1.3rem; margin: 0 0 .15em; }
-  h2 { font-size: 1.05rem; margin: .3em 0 .25em; }
-  h3 { font-size: .95rem; margin: 0 0 .2em; }
-  .lede { font-size: .88rem; margin: 0 0 .5em; }
-  p { margin: 0 0 .5em; }
-  .callout { padding: 9px 12px; margin: 8px 0; font-size: .8rem; }
-  .cite { margin-top: 12px; padding-top: 10px; }
-
-  /* Cards */
-  .card { padding: 11px 13px; margin: 7px 0; }
-
-  /* Buttons */
-  .btn { padding: 8px 14px; border-radius: 10px; }
-  .btn-row { gap: 8px; margin-top: 6px !important; }
-
-  /* --- Home: center the short hero copy in the frame --- */
-  .page-home .wrap { display: flex; flex-direction: column; justify-content: center; }
-
-  /* --- Submit: keep textarea, options and the button all on screen --- */
-  .page-submit label.field { margin: 8px 0 4px; }
-  .page-submit textarea { min-height: 72px; line-height: 1.4; }
-  .page-submit .opt-btn { padding: 8px; }
-  .page-submit .counter { margin-top: 2px; }
-  .page-submit .notice { padding: 8px 10px; margin: 8px 0; font-size: .82rem; }
-
-  /* --- Play: the quote card takes the slack; guesses stay visible --- */
-  .page-play .desc-quote { font-size: 1.02rem; line-height: 1.4; margin: 6px 0 2px; }
-  .page-play .guess-grid { margin-top: 10px; gap: 8px; }
-  .page-play .guess-btn { padding: 10px; }
-  .page-play .verdict { margin-top: 10px; }
-  .page-play .score-big { font-size: 2.4rem; margin: 2px 0; }
-  .page-play .bar { margin: 8px 0; }
-  /* The scorecard's per-description recap is long by nature; in-frame we
-     show just the score + takeaway so the whole card fits with no scroll.
-     The full recap is still there on the standalone site. */
-  .page-play #review { display: none; }
-  .page-play #scorecard .callout { margin-top: 10px; }
-
-  /* --- Results: compress the dashboard so the tally fits --- */
-  .page-results .lede { display: none; }                 /* the tiles are self-explanatory */
-  .page-results h1 { margin-bottom: .1em; }
-  .page-results .card { padding: 7px 12px; margin: 5px 0; }
-  .page-results .stat-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 5px 0; }
-  .page-results .stat { padding: 6px; }
-  .page-results .stat .num { font-size: 1.15rem; }
-  .page-results .stat .lbl { font-size: .6rem; margin-top: 1px; }
-  .page-results .hbar-row { margin: 5px 0; }
-  .page-results .hbar { height: 14px; }
-  .page-results .hint { font-size: .76rem; margin: 4px 0 0; }
-  .page-results #content p { margin: 6px 0 0 !important; }  /* overrides inline verdict margin */
-  .page-results #actions { margin-top: 8px !important; }
+html.embed, html.embed body { height: 100%; }
+html.embed body {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  background-image: none;        /* flat background — no imagery in the frame */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;              /* the frame itself never scrolls */
 }
+
+/* Compact, non-sticky nav (sticky wastes height in a short frame) */
+html.embed .nav { position: static; flex: 0 0 auto; }
+html.embed .nav-inner { padding: 6px 14px; gap: 2px 12px; }
+html.embed .brand { font-size: .92rem; }
+html.embed .nav a.link { font-size: .8rem; padding: 2px 1px; }
+
+/* The content area fills whatever height is left below the nav.
+   min-height:0 lets it shrink; overflow-y:auto is a safety valve so
+   an unusually long student description is never clipped. */
+html.embed .wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-width: 720px;
+  padding: 9px 16px 8px;
+  overflow-y: auto;
+}
+
+/* Drop ALL imagery in the frame: banners, hero, success emblem, nav logo */
+html.embed .hero-img,
+html.embed .banner,
+html.embed .done-emblem,
+html.embed .brand-logo,
+html.embed .cta-card img { display: none !important; }
+
+/* Tighter type + spacing */
+html.embed h1 { font-size: 1.3rem; margin: 0 0 .15em; }
+html.embed h2 { font-size: 1.05rem; margin: .3em 0 .25em; }
+html.embed h3 { font-size: .95rem; margin: 0 0 .2em; }
+html.embed .lede { font-size: .88rem; margin: 0 0 .5em; }
+html.embed p { margin: 0 0 .5em; }
+html.embed .callout { padding: 9px 12px; margin: 8px 0; font-size: .8rem; }
+html.embed .cite { margin-top: 12px; padding-top: 10px; }
+
+/* Cards */
+html.embed .card { padding: 11px 13px; margin: 7px 0; }
+
+/* Buttons */
+html.embed .btn { padding: 8px 14px; border-radius: 10px; }
+html.embed .btn-row { gap: 8px; margin-top: 6px !important; }
+
+/* --- Home: center the short hero copy in the frame --- */
+html.embed .page-home .wrap { display: flex; flex-direction: column; justify-content: center; }
+
+/* --- Submit: keep textarea, options and the button all on screen --- */
+html.embed .page-submit label.field { margin: 8px 0 4px; }
+html.embed .page-submit textarea { min-height: 72px; line-height: 1.4; }
+html.embed .page-submit .opt-btn { padding: 8px; }
+html.embed .page-submit .counter { margin-top: 2px; }
+html.embed .page-submit .notice { padding: 8px 10px; margin: 8px 0; font-size: .82rem; }
+
+/* --- Play: the quote card takes the slack; guesses stay visible --- */
+html.embed .page-play .desc-quote { font-size: 1.02rem; line-height: 1.4; margin: 6px 0 2px; }
+html.embed .page-play .guess-grid { margin-top: 10px; gap: 8px; }
+html.embed .page-play .guess-btn { padding: 10px; }
+html.embed .page-play .verdict { margin-top: 10px; }
+html.embed .page-play .score-big { font-size: 2.4rem; margin: 2px 0; }
+html.embed .page-play .bar { margin: 8px 0; }
+/* The scorecard's per-description recap is long by nature; in-frame we
+   show just the score + takeaway so the whole card fits with no scroll.
+   The full recap is still there on the standalone site. */
+html.embed .page-play #review { display: none; }
+html.embed .page-play #scorecard .callout { margin-top: 10px; }
+
+/* --- Results: compress the dashboard so the tally fits --- */
+html.embed .page-results .lede { display: none; }                 /* the tiles are self-explanatory */
+html.embed .page-results h1 { margin-bottom: .1em; }
+html.embed .page-results .card { padding: 7px 12px; margin: 5px 0; }
+html.embed .page-results .stat-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 5px 0; }
+html.embed .page-results .stat { padding: 6px; }
+html.embed .page-results .stat .num { font-size: 1.15rem; }
+html.embed .page-results .stat .lbl { font-size: .6rem; margin-top: 1px; }
+html.embed .page-results .hbar-row { margin: 5px 0; }
+html.embed .page-results .hbar { height: 14px; }
+html.embed .page-results .hint { font-size: .76rem; margin: 4px 0 0; }
+html.embed .page-results #content p { margin: 6px 0 0 !important; }  /* overrides inline verdict margin */
+html.embed .page-results #actions { margin-top: 8px !important; }
