@@ -1,21 +1,8 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="embed">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script>
-    /* Embed mode: compact, image-free layout that fits a 720×450 frame.
-       Fires when the page is inside an iframe (e.g. Top Hat), when ?embed is
-       in the URL, or on a short viewport — never on the standalone site. */
-    (function () {
-      try {
-        var framed = window.self !== window.top;
-        var flagged = /[?&]embed(?:[=&]|$)/.test(location.search);
-        var shortVp = window.matchMedia && window.matchMedia('(max-height:520px)').matches;
-        if (framed || flagged || shortVp) document.documentElement.classList.add('embed');
-      } catch (e) {}
-    })();
-  </script>
   <title>Describing Orgasm — A Classroom Replication</title>
   <meta name="description" content="A classroom replication of Vance & Wagner (1976): can you tell a writer's anatomy from how they describe an orgasm?">
   <link rel="icon" type="image/png" href="img/favicon.png">
@@ -24,7 +11,7 @@
 <body class="page-home">
   <nav class="nav">
     <div class="nav-inner">
-      <a class="brand" href="index.html"><img class="brand-logo" src="img/emblem.png" alt="">Describing Orgasm</a>
+      <a class="brand" href="index.html">Describing Orgasm</a>
       <a class="link active" href="index.html">The Study</a>
       <a class="link" href="submit.html">Submit</a>
       <a class="link" href="play.html">Play</a>
@@ -33,7 +20,6 @@
   </nav>
 
   <main class="wrap">
-    <img class="hero-img" src="img/hero-banner.png" alt="">
     <h1>Can you tell the body from the words?</h1>
     <p class="lede">
       In 1976, two researchers asked a simple question: if people describe what an
@@ -42,8 +28,8 @@
     </p>
 
     <div class="btn-row" style="margin-top:24px;justify-content:center">
-      <a class="btn pop" href="submit.html">✍️ Write a description</a>
-      <a class="btn primary" href="play.html">⁉️ Play the guessing game</a>
+      <a class="btn pop" href="submit.html">Write a description</a>
+      <a class="btn primary" href="play.html">Play the guessing game</a>
     </div>
   </main>
 </body>

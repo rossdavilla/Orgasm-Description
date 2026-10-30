@@ -54,8 +54,6 @@
 
     --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 10px 30px rgba(0, 0, 0, .38);
   }
-  /* The light contour pattern would read as bright noise on a dark bg. */
-  body { background-image: none; }
 }
 
 * { box-sizing: border-box; }
@@ -64,9 +62,6 @@ html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
   background-color: var(--bg);
-  background-image: url("img/bg-pattern.png");
-  background-size: 700px;
-  background-repeat: repeat;
   color: var(--ink);
   font: 17px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -85,55 +80,6 @@ a { color: var(--link); }
 p { margin: 0 0 1em; }
 
 .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 20px 80px; }
-
-/* ---------- Imagery ---------- */
-.hero-img {
-  display: block;
-  width: 100%;
-  height: auto;
-  border-radius: var(--radius);
-  margin: 16px 0 24px;
-  box-shadow: var(--shadow);
-}
-.banner {
-  display: block;
-  width: 100%;
-  height: 150px;
-  object-fit: cover;
-  object-position: center;
-  border-radius: var(--radius);
-  margin: 16px 0 26px;
-  box-shadow: var(--shadow);
-}
-@media (min-width: 560px) { .banner { height: 190px; } }
-
-/* CTA icon cards (home page) */
-.cta-cards { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 24px; }
-@media (min-width: 520px) { .cta-cards { grid-template-columns: 1fr 1fr; } }
-.cta-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  text-align: center;
-  text-decoration: none;
-  color: var(--ink);
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 24px 18px;
-  box-shadow: var(--shadow);
-  transition: transform .07s ease, border-color .15s ease;
-}
-.cta-card:hover { border-color: var(--teal); transform: translateY(-2px); }
-.cta-card img { width: 92px; height: 92px; object-fit: contain; }
-.cta-card span { font-weight: 700; font-size: 1.05rem; }
-
-/* nav brand mark */
-.brand-logo { width: 26px; height: 26px; object-fit: contain; }
-
-/* success emblem on the submit page */
-.done-emblem { display: block; width: 76px; height: 76px; object-fit: contain; margin: 4px auto 8px; }
 
 /* ---------- Nav ---------- */
 .nav {
@@ -347,34 +293,29 @@ textarea:focus, select:focus { outline: 2px solid var(--teal); outline-offset: 1
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ============================================================
-   EMBED MODE — fit the whole site inside a 720×450 frame, e.g.
-   Top Hat's iframe, regardless of the frame's actual size.
+   COMPACT LAYOUT — the whole site fits a 720×450 frame (e.g. Top
+   Hat) and is used everywhere, embedded or standalone.
 
-   Triggered by the class `embed` on <html> (set by a tiny inline
-   script in each page's <head>) whenever the page is loaded inside
-   an iframe, visited with ?embed in the URL, or shown in a short
-   viewport. The standalone site at rossdavilla.github.io is a
-   top-level page, so it never gets the class and is left untouched.
+   Applied site-wide via a static `embed` class on the <html> tag of
+   every page. No top nav, no imagery, a write-first home screen, and
+   a fixed-height body so the content fits without the frame scrolling.
 
-   Layout only — this never touches config.js, the fetch helpers,
-   or any Google Sheet / Apps Script call.
+   Layout only — this never touches config.js, the fetch helpers, or
+   any Google Sheet / Apps Script call.
    ============================================================ */
 html.embed, html.embed body { height: 100%; }
 html.embed body {
   margin: 0;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.45;
-  background-image: none;        /* flat background — no imagery in the frame */
   display: flex;
   flex-direction: column;
   overflow: hidden;              /* the frame itself never scrolls */
 }
 
-/* Compact, non-sticky nav (sticky wastes height in a short frame) */
-html.embed .nav { position: static; flex: 0 0 auto; }
-html.embed .nav-inner { padding: 6px 14px; gap: 2px 12px; }
-html.embed .brand { font-size: .92rem; }
-html.embed .nav a.link { font-size: .8rem; padding: 2px 1px; }
+/* No top nav in the frame — the in-page buttons carry the flow,
+   and dropping it frees room to make the text larger / easier to read. */
+html.embed .nav { display: none; }
 
 /* The content area fills whatever height is left below the nav.
    min-height:0 lets it shrink; overflow-y:auto is a safety valve so
@@ -387,18 +328,11 @@ html.embed .wrap {
   overflow-y: auto;
 }
 
-/* Drop ALL imagery in the frame: banners, hero, success emblem, nav logo */
-html.embed .hero-img,
-html.embed .banner,
-html.embed .done-emblem,
-html.embed .brand-logo,
-html.embed .cta-card img { display: none !important; }
-
 /* Tighter type + spacing */
-html.embed h1 { font-size: 1.3rem; margin: 0 0 .15em; }
-html.embed h2 { font-size: 1.05rem; margin: .3em 0 .25em; }
-html.embed h3 { font-size: .95rem; margin: 0 0 .2em; }
-html.embed .lede { font-size: .88rem; margin: 0 0 .5em; }
+html.embed h1 { font-size: 1.45rem; margin: 0 0 .15em; }
+html.embed h2 { font-size: 1.1rem; margin: .3em 0 .25em; }
+html.embed h3 { font-size: 1rem; margin: 0 0 .2em; }
+html.embed .lede { font-size: .98rem; margin: 0 0 .5em; }
 html.embed p { margin: 0 0 .5em; }
 html.embed .callout { padding: 9px 12px; margin: 8px 0; font-size: .8rem; }
 html.embed .cite { margin-top: 12px; padding-top: 10px; }
@@ -410,8 +344,12 @@ html.embed .card { padding: 11px 13px; margin: 7px 0; }
 html.embed .btn { padding: 8px 14px; border-radius: 10px; }
 html.embed .btn-row { gap: 8px; margin-top: 6px !important; }
 
-/* --- Home: center the short hero copy in the frame --- */
+/* --- Home: center the copy, and show only the "Write a description" CTA.
+   Hiding the Play button forces a write-first flow — players reach the
+   game via the link on the submit-success screen. --- */
 html.embed .page-home .wrap { display: flex; flex-direction: column; justify-content: center; }
+html.embed .page-home .btn.primary { display: none; }
+html.embed .page-home .btn-row { justify-content: flex-start !important; }
 
 /* --- Submit: keep textarea, options and the button all on screen --- */
 html.embed .page-submit label.field { margin: 8px 0 4px; }
@@ -435,11 +373,11 @@ html.embed .page-play #scorecard .callout { margin-top: 10px; }
 
 /* --- Results: compress the dashboard so the tally fits --- */
 html.embed .page-results .lede { display: none; }                 /* the tiles are self-explanatory */
-html.embed .page-results h1 { margin-bottom: .1em; }
-html.embed .page-results .card { padding: 7px 12px; margin: 5px 0; }
-html.embed .page-results .stat-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 5px 0; }
+html.embed .page-results h1 { font-size: 1.2rem; margin-bottom: .1em; }
+html.embed .page-results .card { padding: 6px 12px; margin: 4px 0; }
+html.embed .page-results .stat-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 4px 0; }
 html.embed .page-results .stat { padding: 6px; }
-html.embed .page-results .stat .num { font-size: 1.15rem; }
+html.embed .page-results .stat .num { font-size: 1.05rem; }
 html.embed .page-results .stat .lbl { font-size: .6rem; margin-top: 1px; }
 html.embed .page-results .hbar-row { margin: 5px 0; }
 html.embed .page-results .hbar { height: 14px; }

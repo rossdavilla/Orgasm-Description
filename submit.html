@@ -1,21 +1,8 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="embed">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script>
-    /* Embed mode: compact, image-free layout that fits a 720×450 frame.
-       Fires when the page is inside an iframe (e.g. Top Hat), when ?embed is
-       in the URL, or on a short viewport — never on the standalone site. */
-    (function () {
-      try {
-        var framed = window.self !== window.top;
-        var flagged = /[?&]embed(?:[=&]|$)/.test(location.search);
-        var shortVp = window.matchMedia && window.matchMedia('(max-height:520px)').matches;
-        if (framed || flagged || shortVp) document.documentElement.classList.add('embed');
-      } catch (e) {}
-    })();
-  </script>
   <title>Submit a Description — Describing Orgasm</title>
   <link rel="icon" type="image/png" href="img/favicon.png">
   <link rel="stylesheet" href="styles.css">
@@ -23,7 +10,7 @@
 <body class="page-submit">
   <nav class="nav">
     <div class="nav-inner">
-      <a class="brand" href="index.html"><img class="brand-logo" src="img/emblem.png" alt="">Describing Orgasm</a>
+      <a class="brand" href="index.html">Describing Orgasm</a>
       <a class="link" href="index.html">The Study</a>
       <a class="link active" href="submit.html">Submit</a>
       <a class="link" href="play.html">Play</a>
@@ -32,7 +19,6 @@
   </nav>
 
   <main class="wrap">
-    <img class="banner" src="img/submit-header.png" alt="">
     <h1>Describe an orgasm</h1>
     <p class="lede">
       In your own words, describe what an orgasm feels like. Do NOT mention your
@@ -62,7 +48,6 @@
     </form>
 
     <div id="done" class="card hidden" style="text-align:center">
-      <img class="done-emblem" src="img/circle-motif.png" alt="">
       <h2 style="margin-top:.2em">Thank you — it's in.</h2>
       <p>Your description has been added anonymously to the pool.</p>
       <div class="btn-row" style="justify-content:center">
