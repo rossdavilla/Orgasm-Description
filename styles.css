@@ -345,3 +345,98 @@ textarea:focus, select:focus { outline: 2px solid var(--teal); outline-offset: 1
   animation: spin .8s linear infinite; margin: 24px auto;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ============================================================
+   EMBED MODE — fit the whole site inside a short frame, e.g.
+   Top Hat's 720×450 iframe. Everything here is scoped to a
+   short viewport, so the standalone site (rossdavilla.github.io)
+   is left completely untouched on normal-height screens.
+   This is layout only — it never touches config.js, the fetch
+   helpers, or any Google Sheet / Apps Script call.
+   ============================================================ */
+@media (max-height: 520px) {
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.45;
+    background-image: none;        /* flat background — no imagery in the frame */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;              /* the frame itself never scrolls */
+  }
+
+  /* Compact, non-sticky nav (sticky wastes height in a short frame) */
+  .nav { position: static; flex: 0 0 auto; }
+  .nav-inner { padding: 6px 14px; gap: 2px 12px; }
+  .brand { font-size: .92rem; }
+  .brand-logo { width: 18px; height: 18px; }
+  .nav a.link { font-size: .8rem; padding: 2px 1px; }
+
+  /* The content area fills whatever height is left below the nav.
+     min-height:0 lets it shrink; overflow-y:auto is a safety valve so
+     an unusually long student description is never clipped. */
+  .wrap {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-width: 720px;
+    padding: 9px 16px 8px;
+    overflow-y: auto;
+  }
+
+  /* Drop ALL imagery in the frame: banners, hero, success emblem, nav logo */
+  .hero-img, .banner, .done-emblem, .brand-logo, .cta-card img { display: none !important; }
+
+  /* Tighter type + spacing */
+  h1 { font-size: 1.3rem; margin: 0 0 .15em; }
+  h2 { font-size: 1.05rem; margin: .3em 0 .25em; }
+  h3 { font-size: .95rem; margin: 0 0 .2em; }
+  .lede { font-size: .88rem; margin: 0 0 .5em; }
+  p { margin: 0 0 .5em; }
+  .callout { padding: 9px 12px; margin: 8px 0; font-size: .8rem; }
+  .cite { margin-top: 12px; padding-top: 10px; }
+
+  /* Cards */
+  .card { padding: 11px 13px; margin: 7px 0; }
+
+  /* Buttons */
+  .btn { padding: 8px 14px; border-radius: 10px; }
+  .btn-row { gap: 8px; margin-top: 6px !important; }
+
+  /* --- Home: center the short hero copy in the frame --- */
+  .page-home .wrap { display: flex; flex-direction: column; justify-content: center; }
+
+  /* --- Submit: keep textarea, options and the button all on screen --- */
+  .page-submit label.field { margin: 8px 0 4px; }
+  .page-submit textarea { min-height: 72px; line-height: 1.4; }
+  .page-submit .opt-btn { padding: 8px; }
+  .page-submit .counter { margin-top: 2px; }
+  .page-submit .notice { padding: 8px 10px; margin: 8px 0; font-size: .82rem; }
+
+  /* --- Play: the quote card takes the slack; guesses stay visible --- */
+  .page-play .desc-quote { font-size: 1.02rem; line-height: 1.4; margin: 6px 0 2px; }
+  .page-play .guess-grid { margin-top: 10px; gap: 8px; }
+  .page-play .guess-btn { padding: 10px; }
+  .page-play .verdict { margin-top: 10px; }
+  .page-play .score-big { font-size: 2.4rem; margin: 2px 0; }
+  .page-play .bar { margin: 8px 0; }
+  /* The scorecard's per-description recap is long by nature; in-frame we
+     show just the score + takeaway so the whole card fits with no scroll.
+     The full recap is still there on the standalone site. */
+  .page-play #review { display: none; }
+  .page-play #scorecard .callout { margin-top: 10px; }
+
+  /* --- Results: compress the dashboard so the tally fits --- */
+  .page-results .lede { display: none; }                 /* the tiles are self-explanatory */
+  .page-results h1 { margin-bottom: .1em; }
+  .page-results .card { padding: 7px 12px; margin: 5px 0; }
+  .page-results .stat-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 5px 0; }
+  .page-results .stat { padding: 6px; }
+  .page-results .stat .num { font-size: 1.15rem; }
+  .page-results .stat .lbl { font-size: .6rem; margin-top: 1px; }
+  .page-results .hbar-row { margin: 5px 0; }
+  .page-results .hbar { height: 14px; }
+  .page-results .hint { font-size: .76rem; margin: 4px 0 0; }
+  .page-results #content p { margin: 6px 0 0 !important; }  /* overrides inline verdict margin */
+  .page-results #actions { margin-top: 8px !important; }
+}
