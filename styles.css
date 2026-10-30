@@ -384,3 +384,30 @@ html.embed .page-results .hbar { height: 14px; }
 html.embed .page-results .hint { font-size: .76rem; margin: 4px 0 0; }
 html.embed .page-results #content p { margin: 6px 0 0 !important; }  /* overrides inline verdict margin */
 html.embed .page-results #actions { margin-top: 8px !important; }
+
+/* ------------------------------------------------------------
+   Larger type — fill the dead space left by removing the nav and
+   imagery. Sizes are tuned per page to the room each one has at
+   720×450. Results is already full, so it keeps its compact sizes.
+   ------------------------------------------------------------ */
+/* Home has the most empty space → the boldest bump */
+html.embed .page-home h1 { font-size: 2.45rem; margin-bottom: .25em; }
+html.embed .page-home .lede { font-size: 1.45rem; line-height: 1.5; }
+html.embed .page-home .btn { font-size: 1.25rem; padding: 15px 26px; }
+html.embed .page-home .btn-row { margin-top: 24px !important; }
+
+/* Submit — bigger heading, prompt, textarea and controls */
+html.embed .page-submit h1 { font-size: 1.85rem; }
+html.embed .page-submit .lede { font-size: 1.18rem; }
+html.embed .page-submit label.field { font-size: 1.05rem; margin: 12px 0 5px; }
+html.embed .page-submit textarea { min-height: 108px; font-size: 1.05rem; }
+html.embed .page-submit .opt-btn { padding: 12px; font-size: 1.03rem; }
+html.embed .page-submit #submitBtn { font-size: 1.12rem; padding: 12px 24px; }
+
+/* Play — enlarge the description (the focus), prompt and guess buttons */
+html.embed .page-play .lede { font-size: 1.12rem; }
+html.embed .page-play .desc-quote { font-size: 1.4rem; line-height: 1.5; }
+html.embed .page-play #round > p { font-size: 1.1rem; }
+html.embed .page-play .guess-btn { font-size: 1.15rem; padding: 15px; }
+html.embed .page-play .score-big { font-size: 3rem; }
+html.embed .page-play #scorecard .callout { font-size: .92rem; }
