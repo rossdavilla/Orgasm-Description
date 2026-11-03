@@ -44,12 +44,16 @@
 
       <div class="btn-row" style="justify-content:center">
         <button type="submit" class="btn pop" id="submitBtn">Submit</button>
+        <button type="button" class="btn" id="skipBtn">Skip</button>
       </div>
+      <p class="hint" style="text-align:center;margin-top:8px">
+        Never had one, or would rather not describe it? You can skip.
+      </p>
     </form>
 
     <div id="done" class="card hidden" style="text-align:center">
-      <h2 style="margin-top:.2em">Thank you — it's in.</h2>
-      <p>Your description has been added anonymously to the pool.</p>
+      <h2 id="doneTitle" style="margin-top:.2em">Thank you — it's in.</h2>
+      <p id="doneMsg">Your description has been added anonymously to the pool.</p>
       <div class="btn-row" style="justify-content:center">
         <a class="btn primary" href="play.html">Play the guessing game →</a>
         <button class="btn" id="again">Submit another</button>
@@ -68,7 +72,30 @@
       var formError = document.getElementById('formError');
       var submitBtn = document.getElementById('submitBtn');
       var done = document.getElementById('done');
+      var doneTitle = document.getElementById('doneTitle');
+      var doneMsg = document.getElementById('doneMsg');
+      var skipBtn = document.getElementById('skipBtn');
+      var againBtn = document.getElementById('again');
       var selectedGenitals = '';
+
+      // Show the confirmation card with the right wording for this path.
+      function showDone(title, msg, againLabel) {
+        doneTitle.textContent = title;
+        doneMsg.textContent = msg;
+        againBtn.textContent = againLabel;
+        form.classList.add('hidden');
+        done.classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      // Skip: for students who've never had an orgasm or don't wish to
+      // describe one. Nothing is saved; they go straight on to the code gate.
+      skipBtn.addEventListener('click', function () {
+        formError.classList.add('hidden');
+        showDone('No description — no problem.',
+          "You can head to the guessing game when your instructor shares the code.",
+          'Write one instead');
+      });
 
       // Build the anatomy option buttons (Penis / Vulva / Intersex / other).
       CONFIG.GENITALS.forEach(function (g) {
@@ -142,9 +169,9 @@
         apiSubmitResponse(description, selectedGenitals)
           .then(function (res) {
             if (res && res.ok) {
-              form.classList.add('hidden');
-              done.classList.remove('hidden');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
+              showDone("Thank you — it's in.",
+                'Your description has been added anonymously to the pool.',
+                'Submit another');
             } else {
               showError((res && res.error) || 'Something went wrong. Please try again.');
               submitBtn.disabled = false;

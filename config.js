@@ -13,6 +13,12 @@ const CONFIG = {
   MIN_DESCRIPTION_LENGTH: 20, // characters
   MAX_DESCRIPTION_LENGTH: 2000,
 
+  // 4-digit code students must enter on the Play page before the guessing
+  // game starts. Lets the instructor pace when the class moves on. This is a
+  // soft gate for pacing, not a secret (it's visible in the page source).
+  // Set to "" to disable the gate entirely.
+  ACCESS_CODE: "5720",
+
   // Options a participant may report about themselves on the submit form.
   GENITALS: [
     { value: "penis", label: "Penis" },

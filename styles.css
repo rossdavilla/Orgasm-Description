@@ -201,6 +201,25 @@ textarea, select {
 textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
 textarea:focus, select:focus { outline: 2px solid var(--teal); outline-offset: 1px; }
 
+/* Access-code entry on the Play page */
+.code-input {
+  display: block;
+  margin: 10px auto 0;
+  width: 180px;
+  max-width: 100%;
+  font: inherit;
+  font-size: 1.7rem;
+  letter-spacing: .4em;
+  text-indent: .4em;       /* re-centre the digits against the trailing letter-spacing */
+  text-align: center;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.code-input:focus { outline: 2px solid var(--teal); outline-offset: 1px; }
+
 .counter { text-align: right; font-size: .8rem; color: var(--ink-soft); margin-top: 4px; }
 
 .check {
@@ -400,7 +419,7 @@ html.embed .page-home .btn-row { margin-top: 24px !important; }
 html.embed .page-submit h1 { font-size: 1.85rem; }
 html.embed .page-submit .lede { font-size: 1.18rem; }
 html.embed .page-submit label.field { font-size: 1.05rem; margin: 12px 0 5px; }
-html.embed .page-submit textarea { min-height: 108px; font-size: 1.05rem; }
+html.embed .page-submit textarea { min-height: 84px; font-size: 1.05rem; }
 html.embed .page-submit .opt-btn { padding: 12px; font-size: 1.03rem; }
 html.embed .page-submit #submitBtn { font-size: 1.12rem; padding: 12px 24px; }
 

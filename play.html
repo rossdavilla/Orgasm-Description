@@ -25,8 +25,24 @@
       description, guess the sex of the person who wrote it.
     </p>
 
+    <!-- Access-code gate: the game won't start until the code is entered -->
+    <section id="gate" class="hidden">
+      <div class="card" style="text-align:center">
+        <p class="progress">Access code</p>
+        <h2 style="margin-top:.2em">Enter the code to begin</h2>
+        <p>Your instructor will share a 4-digit code when it's time to play.</p>
+        <input id="codeInput" class="code-input" type="text" inputmode="numeric"
+               pattern="[0-9]*" maxlength="4" autocomplete="off"
+               aria-label="4-digit access code" placeholder="••••">
+        <div id="codeError" class="notice err hidden"></div>
+        <div class="btn-row" style="justify-content:center;margin-top:14px">
+          <button class="btn pop" id="codeBtn">Enter</button>
+        </div>
+      </div>
+    </section>
+
     <!-- States -->
-    <div id="loading"><div class="spinner"></div><p style="text-align:center">Drawing descriptions…</p></div>
+    <div id="loading" class="hidden"><div class="spinner"></div><p style="text-align:center">Drawing descriptions…</p></div>
 
     <div id="notConfigured" class="notice err hidden">
       This site isn't connected to its backend yet. Add your Apps Script Web App URL
@@ -259,7 +275,42 @@
       }
 
       el('playAgain').addEventListener('click', start);
-      start();
+
+      // ---- Access-code gate ----
+      // The game only loads once the correct code is entered, so the
+      // instructor can control when the class moves on to the guessing game.
+      var CODE = (CONFIG.ACCESS_CODE || '').toString().trim();
+
+      function checkCode() {
+        var val = (el('codeInput').value || '').trim();
+        if (val === CODE) {
+          el('gate').classList.add('hidden');
+          start();
+        } else {
+          el('codeError').textContent = "That code isn't right. Please try again.";
+          el('codeError').classList.remove('hidden');
+          el('codeInput').value = '';
+          el('codeInput').focus();
+        }
+      }
+
+      if (!CODE) {
+        // No code configured → no gate.
+        start();
+      } else {
+        el('codeInput').addEventListener('input', function () {
+          this.value = this.value.replace(/[^0-9]/g, '');
+          el('codeError').classList.add('hidden');
+        });
+        el('codeInput').addEventListener('keydown', function (e) {
+          if (e.key === 'Enter') { e.preventDefault(); checkCode(); }
+        });
+        el('codeBtn').addEventListener('click', checkCode);
+
+        el('loading').classList.add('hidden');
+        el('gate').classList.remove('hidden');
+        el('codeInput').focus();
+      }
     })();
   </script>
 </body>
